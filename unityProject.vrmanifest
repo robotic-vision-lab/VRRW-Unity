@@ -1,0 +1,16 @@
+{
+  "source": "Unity",
+  "applications": [
+    {
+      "app_key": "application.generated.unity.urpvrroboticworkspace.exe",
+      "launch_type": "url",
+      "url": "steam://launch/",
+      "action_manifest_path": "C:\\Users\\mqt00xx\\Local-Workspace\\Unity-Projects\\Unity-VR-Robotic-Workspace\\Assets\\StreamingAssets\\SteamVR\\actions.json",
+      "strings": {
+        "en_us": {
+          "name": "URP VR Robotic Workspace [Testing]"
+        }
+      }
+    }
+  ]
+}
