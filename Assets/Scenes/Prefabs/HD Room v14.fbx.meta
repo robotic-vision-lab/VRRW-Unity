@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 7266a663068893b47b064b7f79f6a81d
+guid: 00f370cf491e42248a138079339d8f32
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
@@ -7,113 +7,33 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: LegMat
+      name: A Type Bulb - Frosted - 1500lm
+    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Aluminum - Anodized Glossy (Grey)
     second: {fileID: 2100000, guid: 870e7c5922bab884aa96a92fd10a1ebc, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Leg_1Mat
+      name: Bamboo Light - Semigloss
+    second: {fileID: 2100000, guid: f2a48a45913f1cc46baf1691ec357ed6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Base Material - Layered
+    second: {fileID: 2100000, guid: d3702166d90e3354e9e61905b0ca2d5a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Paint - Enamel Glossy (Black)
     second: {fileID: 2100000, guid: 870e7c5922bab884aa96a92fd10a1ebc, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: TabletopMat
-    second: {fileID: 2100000, guid: f2a48a45913f1cc46baf1691ec357ed6, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Tabletop_1Mat
-    second: {fileID: 2100000, guid: f2a48a45913f1cc46baf1691ec357ed6, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: countertopMat
-    second: {fileID: 2100000, guid: c238d335a90db5440a261673ae7c3459, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: fixtureMat
+      name: Steel - Satin
     second: {fileID: 2100000, guid: e8a420c9ea5559c4da73a76f956c434a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: fixture_(1)Mat
-    second: {fileID: 2100000, guid: e8a420c9ea5559c4da73a76f956c434a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: floorMat
-    second: {fileID: 2100000, guid: 419e451979949584994b7a654ffcf8d1, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: lightMat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(1)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(1)_(1)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(2)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(2)_(1)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(3)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(3)_(1)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(4)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(4)_(1)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(5)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(5)_(1)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light_(6)Mat
-    second: {fileID: 2100000, guid: e1f07fddb0e61f94fada94acb483d81c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: roofMat
-    second: {fileID: 2100000, guid: d3702166d90e3354e9e61905b0ca2d5a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: wallsMat
-    second: {fileID: 2100000, guid: d3702166d90e3354e9e61905b0ca2d5a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
