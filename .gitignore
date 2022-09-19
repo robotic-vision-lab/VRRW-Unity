@@ -60,3 +60,6 @@ crashlytics-build.properties
 
 # Visual Studio Code local configs
 .vscode
+
+# Logs folders
+DMPLogs
