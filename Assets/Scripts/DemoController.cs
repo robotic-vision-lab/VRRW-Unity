@@ -19,12 +19,15 @@ public class DemoController : MonoBehaviour
     Dictionary<string, ArticulationBody> RobotJoints;
     Dictionary<string, List<float>> PreconfiguredPositions;
 
-    Queue<IEnumerator> GripperControlQueue;
+    Queue<IEnumerator> GripperControlQueue = new Queue<IEnumerator>();
+    Queue<IEnumerator> ArmPlannedMotionQueue = new Queue<IEnumerator>();
 
     private void Start()
     {
         DefineRobotComponents();
         StartCoroutine(GripperQueueManagerCoroutine());
+
+        ROSBackend = ROSConnection.GetOrCreateInstance();
     }
 
     private void Update()
@@ -203,8 +206,6 @@ public class DemoController : MonoBehaviour
             {"zero", new List<float>(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})},
             {"home", new List<float>(new float[] {0, -Mathf.PI / 2.0f, 0, -Mathf.PI / 2.0f, 0, 0, 0, 0, 0, 0, 0, 0})}
         };
-
-        GripperControlQueue = new Queue<IEnumerator>();
 
         MakeRobotRigid();
         SnapArmToPosition("home");
