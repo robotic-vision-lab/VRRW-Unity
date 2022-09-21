@@ -22,18 +22,27 @@ public class DemoController : MonoBehaviour
     Queue<IEnumerator> GripperControlQueue = new Queue<IEnumerator>();
     Queue<IEnumerator> ArmPlannedMotionQueue = new Queue<IEnumerator>();
 
+    public TextAsset PlaybackFile;
+    public bool ExecutePlayback = false;
+    bool IsPlaybackExecuting = false;
+
     private void Start()
     {
         DefineRobotComponents();
         StartCoroutine(GripperQueueManagerCoroutine());
 
-        ROSBackend = ROSConnection.GetOrCreateInstance();
+        // ROSBackend = ROSConnection.GetOrCreateInstance();
     }
 
     private void Update()
     {
         BaseArticulation.GetDriveTargets(ArticulationTargets);
         BaseArticulation.GetJointPositions(ArticulationPositions);
+
+        if (PlaybackFile != null && ExecutePlayback == true && IsPlaybackExecuting == false)
+        {
+            StartCoroutine(PlaybackFromCSV());
+        }
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -60,6 +69,13 @@ public class DemoController : MonoBehaviour
             drive.damping = 30f;
             JointArticulations[i].xDrive = drive;
         }
+    }
+
+    private void SetJointTargetDegree(int index, float degree)
+    {
+        ArticulationDrive drive = JointArticulations[index].xDrive;
+        drive.target = degree;
+        JointArticulations[index].xDrive = drive;
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -130,6 +146,77 @@ public class DemoController : MonoBehaviour
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
+    /*                                                  PLAYBACK FROM CSV                                                 */
+    /* ------------------------------------------------------------------------------------------------------------------ */
+
+    private IEnumerator PlaybackFromCSV()
+    {
+        if (PlaybackFile == null) yield return null;
+        else
+        {
+            IsPlaybackExecuting = true;
+            string fileContent = PlaybackFile.text.TrimEnd('\n');
+            List<string> rawTrajectories = new List<string>(fileContent.Split("\n"));
+            List<List<float>> stampedTrajectories = new List<List<float>>();
+            foreach(string raw in rawTrajectories)
+            {
+                List<string> content = new List<string>(raw.Split(","));
+                List<float> parsedValues = new List<float>();
+                foreach(string rawValue in content)
+                {
+                    parsedValues.Add((float)Convert.ToDouble(rawValue));
+                }
+                stampedTrajectories.Add(parsedValues);
+            }
+
+            // this is a little naive...
+            float averageDelay = stampedTrajectories[stampedTrajectories.Count - 1][0] / stampedTrajectories.Count;
+
+            foreach(List<float> trajectory in stampedTrajectories)
+            {
+                List<float> jointTargets = new List<float>();
+                List<float> jointVelocities = new List<float>();
+                BaseArticulation.GetDriveTargets(jointTargets);
+                BaseArticulation.GetDriveTargetVelocities(jointVelocities);
+
+                if ((int)trajectory[0] == 0)
+                {
+                    SnapArmToConfiguration(trajectory.GetRange(1, 6));
+                    continue;
+                }
+
+
+                // for (int i = 1; i < trajectory.Count; i++)
+                // {
+                    // for (int j = 0; j < 6; j++)
+                    // {
+                    //     jointTargets[j] = trajectory[i];
+                    //     jointVelocities[j] = trajectory[i];
+                    // }
+                    // BaseArticulation.SetDriveTargets(jointTargets);
+                    // BaseArticulation.SetDriveTargetVelocities(jointVelocities);
+                    // SetJointTargetDegree(i - 1, trajectory[i] * Mathf.Rad2Deg);
+                    // SnapArmToConfiguration(trajectory.GetRange(1, 6));
+                // }
+
+                for (int i = 0; i < 6; i++)
+                {
+                    jointTargets[i] = trajectory[i + 1];
+                    jointVelocities[i] = trajectory[i + 7];
+                }
+                BaseArticulation.SetDriveTargets(jointTargets);
+                BaseArticulation.SetDriveTargetVelocities(jointVelocities);
+
+                yield return new WaitForSeconds(averageDelay);
+            }
+
+            yield return new WaitForSeconds(0.5f);
+            IsPlaybackExecuting = false;
+            ExecutePlayback = false;
+        }
+    }
+
+    /* ------------------------------------------------------------------------------------------------------------------ */
     /*                                                  "CHEAT" FUNCTIONS                                                 */
     /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -151,6 +238,18 @@ public class DemoController : MonoBehaviour
         }
         BaseArticulation.SetDriveTargets(PreconfiguredPositions[position]);
         BaseArticulation.SetJointPositions(PreconfiguredPositions[position]);
+    }
+
+    private void SnapArmToConfiguration(List<float> joints)
+    {
+        List<float> current = new List<float>();
+        BaseArticulation.GetJointPositions(current);
+        for (int i = 0; i < joints.Count; i++)
+        {
+            current[i] = joints[i];
+        }
+        BaseArticulation.SetDriveTargets(current);
+        BaseArticulation.SetJointPositions(current);
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */

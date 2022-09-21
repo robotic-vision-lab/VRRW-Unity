@@ -2560,6 +2560,12 @@ MonoBehaviour:
   Robot: {fileID: 0}
   ROSBackend: {fileID: 0}
   BaseArticulation: {fileID: 0}
+  ArticulationPositions: []
+  ArticulationTargets: []
+  JointNames: []
+  JointArticulations: []
+  GripperJoints: []
+  PlaybackFile: {fileID: 4900000, guid: 62a9e1f305e17d54daa6d29c2e64f48a, type: 3}
 --- !u!1001 &2125179786
 PrefabInstance:
   m_ObjectHideFlags: 0
