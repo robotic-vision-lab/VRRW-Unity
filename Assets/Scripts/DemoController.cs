@@ -15,12 +15,16 @@ public class DemoController : MonoBehaviour
 
     public List<string> JointNames;
     public List<ArticulationBody> JointArticulations;
+    public List<ArticulationBody> GripperJoints;
     Dictionary<string, ArticulationBody> RobotJoints;
     Dictionary<string, List<float>> PreconfiguredPositions;
+
+    Queue<IEnumerator> GripperControlQueue;
 
     private void Start()
     {
         DefineRobotComponents();
+        StartCoroutine(GripperQueueManagerCoroutine());
     }
 
     private void Update()
@@ -29,7 +33,11 @@ public class DemoController : MonoBehaviour
         BaseArticulation.GetJointPositions(ArticulationPositions);
     }
 
-    void MakeRobotRigid()
+    /* ------------------------------------------------------------------------------------------------------------------ */
+    /*                                                     ARM CONTROL                                                    */
+    /* ------------------------------------------------------------------------------------------------------------------ */
+
+    private void MakeRobotRigid()
     {
         for (int i = 0; i < 6; i++)
         {
@@ -40,7 +48,7 @@ public class DemoController : MonoBehaviour
         }
     }
 
-    void MakeRobotCompliant()
+    private void MakeRobotCompliant()
     {
         for (int i = 0; i < JointArticulations.Count; i++)
         {
@@ -51,7 +59,78 @@ public class DemoController : MonoBehaviour
         }
     }
 
-    void SnapJointToTargetAngle(int index, float target)
+    /* ------------------------------------------------------------------------------------------------------------------ */
+    /*                                                   GRIPPER CONTROL                                                  */
+    /* ------------------------------------------------------------------------------------------------------------------ */
+
+    public void CloseGripper() { GripperControlQueue.Enqueue(CloseGripperCoroutine()); }
+
+    public void OpenGripper() { GripperControlQueue.Enqueue(OpenGripperCoroutine()); }
+
+    private IEnumerator GripperQueueManagerCoroutine()
+    {
+        while (true)
+        {
+            if (GripperControlQueue.Count > 0)
+            {
+                yield return StartCoroutine(GripperControlQueue.Dequeue());
+            }
+            yield return null;
+        }
+    }
+
+    private IEnumerator CloseGripperCoroutine(float timeToComplete = 1f, int steps = 25)
+    {
+        WaitForSecondsRealtime lag = new WaitForSecondsRealtime(timeToComplete / steps);
+        float deltaAngle = (0.8f / steps) * Mathf.Rad2Deg;
+        for (int i = 0; i < steps; i++)
+        {
+            for (int j = 0; j < GripperJoints.Count; j++)
+            {
+                ArticulationDrive drive = GripperJoints[j].xDrive;
+                if (j == 0 || j == 3)
+                {
+                    drive.target -= deltaAngle;
+                }
+                else
+                {
+                    drive.target += deltaAngle;
+
+                }
+                GripperJoints[j].xDrive = drive;
+            }
+            yield return lag;
+        }
+    }
+
+    private IEnumerator OpenGripperCoroutine(float timeToComplete = 1f, int steps = 25)
+    {
+        WaitForSecondsRealtime lag = new WaitForSecondsRealtime(timeToComplete / steps);
+        float deltaAngle = (0.8f / steps) * Mathf.Rad2Deg;
+        for (int i = 0; i < steps; i++)
+        {
+            foreach (ArticulationBody joint in GripperJoints)
+            {
+                ArticulationDrive drive = joint.xDrive;
+                if (drive.target < 0)
+                {
+                    drive.target += deltaAngle;
+                }
+                else
+                {
+                    drive.target -= deltaAngle;
+                }
+                joint.xDrive = drive;
+            }
+            yield return lag;
+        }
+    }
+
+    /* ------------------------------------------------------------------------------------------------------------------ */
+    /*                                                  "CHEAT" FUNCTIONS                                                 */
+    /* ------------------------------------------------------------------------------------------------------------------ */
+
+    private void SnapJointToTargetAngle(int index, float target)
     {
         List<float> current = new List<float>();
         BaseArticulation.GetJointPositions(current);
@@ -60,7 +139,7 @@ public class DemoController : MonoBehaviour
         BaseArticulation.SetJointPositions(current);
     }
 
-    void SnapArmToPosition(string position)
+    private void SnapArmToPosition(string position)
     {
         if (!PreconfiguredPositions.ContainsKey(position))
         {
@@ -70,6 +149,10 @@ public class DemoController : MonoBehaviour
         BaseArticulation.SetDriveTargets(PreconfiguredPositions[position]);
         BaseArticulation.SetJointPositions(PreconfiguredPositions[position]);
     }
+
+    /* ------------------------------------------------------------------------------------------------------------------ */
+    /*                                             ROBOT AND OTHER DEFINITIONS                                            */
+    /* ------------------------------------------------------------------------------------------------------------------ */
 
     private void DefineRobotComponents()
     {
@@ -108,6 +191,8 @@ public class DemoController : MonoBehaviour
             Robot.transform.Find(baseChain + "/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link/flange/tool0/robotiq_2f_base_palm/right_knuckle_link").GetComponent<ArticulationBody>(),
         };
 
+        GripperJoints = JointArticulations.GetRange(6, 6);
+
         RobotJoints = new Dictionary<string, ArticulationBody>();
         for (int i = 0; i < JointNames.Count; i++)
         {
@@ -118,6 +203,8 @@ public class DemoController : MonoBehaviour
             {"zero", new List<float>(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})},
             {"home", new List<float>(new float[] {0, -Mathf.PI / 2.0f, 0, -Mathf.PI / 2.0f, 0, 0, 0, 0, 0, 0, 0, 0})}
         };
+
+        GripperControlQueue = new Queue<IEnumerator>();
 
         MakeRobotRigid();
         SnapArmToPosition("home");
