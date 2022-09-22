@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,14 +11,18 @@ public class DemoController : MonoBehaviour
     public ROSConnection ROSBackend;
     public ArticulationBody BaseArticulation;
 
-    public List<float> ArticulationPositions;
     public List<float> ArticulationTargets;
+    public List<float> ArticulationPositions;
+    public List<float> ArticulationVelocities;
 
     public List<string> JointNames;
     public List<ArticulationBody> JointArticulations;
-    public List<ArticulationBody> GripperJoints;
     Dictionary<string, ArticulationBody> RobotJoints;
     Dictionary<string, List<float>> PreconfiguredPositions;
+
+    public List<ArticulationBody> GripperJoints;
+    bool IsGripperClose = false;
+    [Range(0.1f, 0.8f)] public float GripperRange = 0.35f;
 
     Queue<IEnumerator> GripperControlQueue = new Queue<IEnumerator>();
     Queue<IEnumerator> ArmPlannedMotionQueue = new Queue<IEnumerator>();
@@ -26,10 +31,20 @@ public class DemoController : MonoBehaviour
     public bool ExecutePlayback = false;
     bool IsPlaybackExecuting = false;
 
+    string LogFileName;
+    bool IsHandGuided = false;
+    [Range(0, 60)] public int LoggingRate = 30;
+
     private void Start()
     {
         DefineRobotComponents();
         StartCoroutine(GripperQueueManagerCoroutine());
+
+        LogFileName = "DMPLogs/Trajectory-" + DateTime.Now.ToString().Replace("/", "-").Replace(":", "-") + ".csv";
+        var dummy = File.Create(LogFileName);
+        dummy.Dispose();
+
+        InvokeRepeating("LogToFile", 0f, FrequencyToPeriod(LoggingRate));
 
         // ROSBackend = ROSConnection.GetOrCreateInstance();
     }
@@ -38,31 +53,79 @@ public class DemoController : MonoBehaviour
     {
         BaseArticulation.GetDriveTargets(ArticulationTargets);
         BaseArticulation.GetJointPositions(ArticulationPositions);
+        BaseArticulation.GetJointVelocities(ArticulationVelocities);
 
         if (PlaybackFile != null && ExecutePlayback == true && IsPlaybackExecuting == false)
         {
             StartCoroutine(PlaybackFromCSV());
         }
+
+        // string logging = Time.realtimeSinceStartup.ToString() + ",";
+        // string jointCSV = String.Join(",", ArticulationPositions.GetRange(0, 6).ToArray());
+        // string velocCSV = String.Join(",", ArticulationVelocities.GetRange(0, 6).ToArray());
+        // logging += jointCSV + "," + velocCSV;
+        // if (IsHandGuided)
+        // {
+        //     using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
+        //     using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + joints + velocities);
+        // }
+        // else
+        // {
+        //     using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
+        //     using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ");
+        // }
+        // Debug.Log(logging);
+    }
+
+    void LogToFile()
+    {
+        try
+        {
+            string logging = Time.realtimeSinceStartup.ToString() + ",";
+            string jointCSV = String.Join(",", ArticulationPositions.GetRange(0, 6).ToArray());
+            string velocCSV = String.Join(",", ArticulationVelocities.GetRange(0, 6).ToArray());
+            if (IsHandGuided)
+            {
+                using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
+                using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + jointCSV + "," + velocCSV);
+            }
+            else
+            {
+                using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
+                using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + "0,0,0,0,0,0,0,0,0,0,0,0");
+            }
+        }
+        catch
+        {
+            Debug.LogWarning("Swallowed an error here, will try again...");
+        }
+
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
     /*                                                     ARM CONTROL                                                    */
     /* ------------------------------------------------------------------------------------------------------------------ */
 
-    private void MakeRobotRigid()
+    public void MakeRobotRigid()
     {
+        IsHandGuided = false;
+        // for (int i = 0; i < JointArticulations.Count; i++)
         for (int i = 0; i < 6; i++)
         {
             ArticulationDrive drive = JointArticulations[i].xDrive;
-            drive.stiffness = 5000f;
-            drive.damping = 8000f;
+            drive.stiffness = 100000f;
+            drive.damping = 80000f;
+            drive.forceLimit = float.PositiveInfinity;
+            BaseArticulation.SetDriveTargets(ArticulationPositions);
             JointArticulations[i].xDrive = drive;
         }
     }
 
-    private void MakeRobotCompliant()
+    public void MakeRobotCompliant()
     {
-        for (int i = 0; i < JointArticulations.Count; i++)
+        IsHandGuided = true;
+        // for (int i = 0; i < JointArticulations.Count; i++)
+        for (int i = 0; i < 6; i++)
         {
             ArticulationDrive drive = JointArticulations[i].xDrive;
             drive.stiffness = 0f;
@@ -86,6 +149,20 @@ public class DemoController : MonoBehaviour
 
     public void OpenGripper() { GripperControlQueue.Enqueue(OpenGripperCoroutine()); }
 
+    public void ToggleGripper()
+    {
+        if (IsGripperClose)
+        {
+            OpenGripper();
+            IsGripperClose = false;
+        }
+        else
+        {
+            CloseGripper();
+            IsGripperClose = true;
+        }
+    }
+
     private IEnumerator GripperQueueManagerCoroutine()
     {
         while (true)
@@ -101,7 +178,7 @@ public class DemoController : MonoBehaviour
     private IEnumerator CloseGripperCoroutine(float timeToComplete = 1f, int steps = 25)
     {
         WaitForSecondsRealtime lag = new WaitForSecondsRealtime(timeToComplete / steps);
-        float deltaAngle = (0.8f / steps) * Mathf.Rad2Deg;
+        float deltaAngle = (GripperRange / steps) * Mathf.Rad2Deg;
         for (int i = 0; i < steps; i++)
         {
             for (int j = 0; j < GripperJoints.Count; j++)
@@ -125,7 +202,7 @@ public class DemoController : MonoBehaviour
     private IEnumerator OpenGripperCoroutine(float timeToComplete = 1f, int steps = 25)
     {
         WaitForSecondsRealtime lag = new WaitForSecondsRealtime(timeToComplete / steps);
-        float deltaAngle = (0.8f / steps) * Mathf.Rad2Deg;
+        float deltaAngle = (GripperRange / steps) * Mathf.Rad2Deg;
         for (int i = 0; i < steps; i++)
         {
             foreach (ArticulationBody joint in GripperJoints)
@@ -229,7 +306,7 @@ public class DemoController : MonoBehaviour
         BaseArticulation.SetJointPositions(current);
     }
 
-    private void SnapArmToPosition(string position)
+    public void SnapArmToPosition(string position)
     {
         if (!PreconfiguredPositions.ContainsKey(position))
         {
@@ -251,6 +328,8 @@ public class DemoController : MonoBehaviour
         BaseArticulation.SetDriveTargets(current);
         BaseArticulation.SetJointPositions(current);
     }
+
+    float FrequencyToPeriod(float hz) { return 1.0f / hz; }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
     /*                                             ROBOT AND OTHER DEFINITIONS                                            */
@@ -301,12 +380,20 @@ public class DemoController : MonoBehaviour
             RobotJoints.Add(JointNames[i], JointArticulations[i]);
         }
 
+        float ninety = Mathf.PI / 2.0f;
+
         PreconfiguredPositions = new Dictionary<string, List<float>>() {
             {"zero", new List<float>(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})},
-            {"home", new List<float>(new float[] {0, -Mathf.PI / 2.0f, 0, -Mathf.PI / 2.0f, 0, 0, 0, 0, 0, 0, 0, 0})}
+            {"home", new List<float>(new float[] {0, -ninety, 0, -ninety, 0, 0, 0, 0, 0, 0, 0, 0})},
+            {"square_right" , new List<float>(new float[] {0, -ninety, -ninety, -ninety, ninety, 0, 0, 0, 0, 0, 0, 0})},
+            {"square_left"  , new List<float>(new float[] {-ninety * 2, -ninety, -ninety, -ninety, ninety, 0, 0, 0, 0, 0, 0, 0})},
+            {"square_center", new List<float>(new float[] {-ninety, -ninety, -ninety, -ninety, ninety, 0, 0, 0, 0, 0, 0, 0})}
         };
 
+        BaseArticulation.GetDriveTargets(ArticulationTargets);
+        BaseArticulation.GetJointPositions(ArticulationPositions);
+
         MakeRobotRigid();
-        SnapArmToPosition("home");
+        SnapArmToPosition("square_right");
     }
 }

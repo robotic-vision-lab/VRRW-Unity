@@ -9,16 +9,28 @@ public class SimpleAttach : MonoBehaviour
     private Interactable interactable;
     private Hand.AttachmentFlags attachmentFlags = Hand.defaultAttachmentFlags & ( ~Hand.AttachmentFlags.SnapOnAttach ) & ( ~Hand.AttachmentFlags.DetachOthers ) & ( ~Hand.AttachmentFlags.VelocityMovement );
 
+    Vector3 OriginalPosition;
+    Quaternion OriginalRotation;
+
+
     // Start is called before the first frame update
     void Start()
     {
         interactable = this.GetComponent<Interactable>();
+        OriginalPosition = transform.position;
+        OriginalRotation = transform.rotation;
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+
+    public void RestorePose()
+    {
+        transform.position = OriginalPosition;
+        transform.rotation = OriginalRotation;
     }
 
     private void OnHandHoverBegin(Hand hand)
