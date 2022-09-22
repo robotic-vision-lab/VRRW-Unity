@@ -24,6 +24,9 @@ public class DemoController : MonoBehaviour
     bool IsGripperClose = false;
     [Range(0.1f, 0.8f)] public float GripperRange = 0.35f;
 
+    public GameObject GhostRobot;
+    bool IsGhostDrive;
+
     Queue<IEnumerator> GripperControlQueue = new Queue<IEnumerator>();
     Queue<IEnumerator> ArmPlannedMotionQueue = new Queue<IEnumerator>();
 
@@ -59,22 +62,6 @@ public class DemoController : MonoBehaviour
         {
             StartCoroutine(PlaybackFromCSV());
         }
-
-        // string logging = Time.realtimeSinceStartup.ToString() + ",";
-        // string jointCSV = String.Join(",", ArticulationPositions.GetRange(0, 6).ToArray());
-        // string velocCSV = String.Join(",", ArticulationVelocities.GetRange(0, 6).ToArray());
-        // logging += jointCSV + "," + velocCSV;
-        // if (IsHandGuided)
-        // {
-        //     using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
-        //     using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + joints + velocities);
-        // }
-        // else
-        // {
-        //     using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
-        //     using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ");
-        // }
-        // Debug.Log(logging);
     }
 
     void LogToFile()
@@ -103,34 +90,64 @@ public class DemoController : MonoBehaviour
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
+    /*                                                 GHOST DRIVE SECTION                                                */
+    /* ------------------------------------------------------------------------------------------------------------------ */
+
+    public void Vanish()
+    {
+        foreach(Collider c in gameObject.GetComponentsInChildren<Collider>()) c.enabled = false;
+        // foreach(Renderer r in gameObject.GetComponentsInChildren<Renderer>()) r.enabled = false;
+        IsGhostDrive = true;
+    }
+
+    public void Appear()
+    {
+        foreach(Collider c in gameObject.GetComponentsInChildren<Collider>()) c.enabled = true;
+        // foreach(Renderer r in gameObject.GetComponentsInChildren<Renderer>()) r.enabled = true;
+        IsGhostDrive = false;
+    }
+
+    /* ------------------------------------------------------------------------------------------------------------------ */
     /*                                                     ARM CONTROL                                                    */
     /* ------------------------------------------------------------------------------------------------------------------ */
 
     public void MakeRobotRigid()
     {
         IsHandGuided = false;
-        // for (int i = 0; i < JointArticulations.Count; i++)
-        for (int i = 0; i < 6; i++)
+        if (IsGhostDrive == false)
         {
-            ArticulationDrive drive = JointArticulations[i].xDrive;
-            drive.stiffness = 100000f;
-            drive.damping = 80000f;
-            drive.forceLimit = float.PositiveInfinity;
-            BaseArticulation.SetDriveTargets(ArticulationPositions);
-            JointArticulations[i].xDrive = drive;
+            for (int i = 0; i < 6; i++)
+            {
+                ArticulationDrive drive = JointArticulations[i].xDrive;
+                drive.stiffness = 100000f;
+                drive.damping = 80000f;
+                drive.forceLimit = float.PositiveInfinity;
+                BaseArticulation.SetDriveTargets(ArticulationPositions);
+                JointArticulations[i].xDrive = drive;
+            }
+        }
+        else
+        {
+            GhostRobot.GetComponent<GhostdriveController>().MakeRobotRigid();
         }
     }
 
     public void MakeRobotCompliant()
     {
-        IsHandGuided = true;
-        // for (int i = 0; i < JointArticulations.Count; i++)
-        for (int i = 0; i < 6; i++)
+        IsHandGuided = false;
+        if (IsGhostDrive == false)
         {
-            ArticulationDrive drive = JointArticulations[i].xDrive;
-            drive.stiffness = 0f;
-            drive.damping = 30f;
-            JointArticulations[i].xDrive = drive;
+            for (int i = 0; i < 6; i++)
+            {
+                ArticulationDrive drive = JointArticulations[i].xDrive;
+                drive.stiffness = 0f;
+                drive.damping = 30f;
+                JointArticulations[i].xDrive = drive;
+            }
+        }
+        else
+        {
+            GhostRobot.GetComponent<GhostdriveController>().MakeRobotCompliant();
         }
     }
 
@@ -313,8 +330,15 @@ public class DemoController : MonoBehaviour
             Debug.Log($"{position} is not known in preset library...");
             return;
         }
-        BaseArticulation.SetDriveTargets(PreconfiguredPositions[position]);
-        BaseArticulation.SetJointPositions(PreconfiguredPositions[position]);
+        if (IsGhostDrive == false)
+        {
+            BaseArticulation.SetDriveTargets(PreconfiguredPositions[position]);
+            BaseArticulation.SetJointPositions(PreconfiguredPositions[position]);
+        }
+        else
+        {
+            GhostRobot.GetComponent<GhostdriveController>().SnapArmToConfiguration(PreconfiguredPositions[position]);
+        }
     }
 
     private void SnapArmToConfiguration(List<float> joints)
