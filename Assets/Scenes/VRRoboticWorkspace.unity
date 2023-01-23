@@ -1606,7 +1606,7 @@ MonoBehaviour:
   RealRobot: {fileID: 0}
   RealRobotDrive: {fileID: 0}
   GhostRobot: {fileID: 0}
-  GhostMaterial: {fileID: 0}
+  GhostMaterial: {fileID: 2100000, guid: 91f754e42ef49914cb8a4748a3177d87, type: 2}
   ArticulationTargets: []
   ArticulationPositions: []
   ArticulationVelocities: []
