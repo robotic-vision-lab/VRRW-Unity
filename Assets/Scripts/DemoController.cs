@@ -34,20 +34,20 @@ public class DemoController : MonoBehaviour
     public bool ExecutePlayback = false;
     bool IsPlaybackExecuting = false;
 
-    string LogFileName;
-    bool IsHandGuided = false;
-    [Range(0, 60)] public int LoggingRate = 30;
+    // string LogFileName;
+    // bool IsHandGuided = false;
+    // [Range(0, 60)] public int LoggingRate = 30;
 
     private void Start()
     {
         DefineRobotComponents();
         StartCoroutine(GripperQueueManagerCoroutine());
 
-        LogFileName = "DMPLogs/Trajectory-" + DateTime.Now.ToString().Replace("/", "-").Replace(":", "-") + ".csv";
-        var dummy = File.Create(LogFileName);
-        dummy.Dispose();
+        // LogFileName = "DMPLogs/Trajectory-" + DateTime.Now.ToString().Replace("/", "-").Replace(":", "-") + ".csv";
+        // var dummy = File.Create(LogFileName);
+        // dummy.Dispose();
 
-        InvokeRepeating("LogToFile", 0f, FrequencyToPeriod(LoggingRate));
+        // InvokeRepeating("LogToFile", 0f, FrequencyToPeriod(LoggingRate));
 
         // ROSBackend = ROSConnection.GetOrCreateInstance();
     }
@@ -58,36 +58,36 @@ public class DemoController : MonoBehaviour
         BaseArticulation.GetJointPositions(ArticulationPositions);
         BaseArticulation.GetJointVelocities(ArticulationVelocities);
 
-        if (PlaybackFile != null && ExecutePlayback == true && IsPlaybackExecuting == false)
-        {
-            StartCoroutine(PlaybackFromCSV());
-        }
+        // if (PlaybackFile != null && ExecutePlayback == true && IsPlaybackExecuting == false)
+        // {
+        //     StartCoroutine(PlaybackFromCSV());
+        // }
     }
 
-    void LogToFile()
-    {
-        try
-        {
-            string logging = Time.realtimeSinceStartup.ToString() + ",";
-            string jointCSV = String.Join(",", ArticulationPositions.GetRange(0, 6).ToArray());
-            string velocCSV = String.Join(",", ArticulationVelocities.GetRange(0, 6).ToArray());
-            if (IsHandGuided)
-            {
-                using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
-                using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + jointCSV + "," + velocCSV);
-            }
-            else
-            {
-                using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
-                using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + "0,0,0,0,0,0,0,0,0,0,0,0");
-            }
-        }
-        catch
-        {
-            Debug.LogWarning("Swallowed an error here, will try again...");
-        }
+    // void LogToFile()
+    // {
+    //     try
+    //     {
+    //         string logging = Time.realtimeSinceStartup.ToString() + ",";
+    //         string jointCSV = String.Join(",", ArticulationPositions.GetRange(0, 6).ToArray());
+    //         string velocCSV = String.Join(",", ArticulationVelocities.GetRange(0, 6).ToArray());
+    //         if (IsHandGuided)
+    //         {
+    //             using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
+    //             using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + jointCSV + "," + velocCSV);
+    //         }
+    //         else
+    //         {
+    //             using (FileStream fs = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
+    //             using (StreamWriter sw = new StreamWriter(fs)) sw.WriteLine(logging + "0,0,0,0,0,0,0,0,0,0,0,0");
+    //         }
+    //     }
+    //     catch
+    //     {
+    //         Debug.LogWarning("Swallowed an error here, will try again...");
+    //     }
 
-    }
+    // }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
     /*                                                 GHOST DRIVE SECTION                                                */
@@ -113,7 +113,7 @@ public class DemoController : MonoBehaviour
 
     public void MakeRobotRigid()
     {
-        IsHandGuided = false;
+        // IsHandGuided = false;
         if (IsGhostDrive == false)
         {
             for (int i = 0; i < 6; i++)
@@ -134,7 +134,7 @@ public class DemoController : MonoBehaviour
 
     public void MakeRobotCompliant()
     {
-        IsHandGuided = false;
+        // IsHandGuided = false;
         if (IsGhostDrive == false)
         {
             for (int i = 0; i < 6; i++)
@@ -418,6 +418,6 @@ public class DemoController : MonoBehaviour
         BaseArticulation.GetJointPositions(ArticulationPositions);
 
         MakeRobotRigid();
-        SnapArmToPosition("square_right");
+        SnapArmToPosition("square_center");
     }
 }
