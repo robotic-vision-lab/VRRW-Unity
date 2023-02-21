@@ -1618,9 +1618,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e2dad2c1720354c912c1f5fde8b6b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RealRobot: {fileID: 0}
-  RealRobotDrive: {fileID: 0}
-  GhostRobot: {fileID: 0}
+  RealRobot: {fileID: 1684431486}
+  RealRobotDrive: {fileID: 1684431489}
+  GhostRobot: {fileID: 674457873}
   GhostMaterial: {fileID: 2100000, guid: 91f754e42ef49914cb8a4748a3177d87, type: 2}
   ArticulationTargets: []
   ArticulationPositions: []
@@ -2575,7 +2575,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1684431485}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1684431487
+--- !u!114 &1684431489
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2584,13 +2584,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 1684431486}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9db2c60833f0a0e47996e01996076a03, type: 3}
+  m_Script: {fileID: 11500000, guid: 98427f341838b4245ace4220d43c9b67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Freedrive: 0
-  RobotGameObject: {fileID: 0}
+  Robot: {fileID: 1684431486}
+  ROSBackend: {fileID: 0}
+  BaseArticulation: {fileID: 0}
+  ArticulationTargets: []
+  ArticulationPositions: []
+  ArticulationVelocities: []
+  JointNames: []
   JointArticulations: []
-  LoggingRate: 10
+  GripperJoints: []
+  GripperRange: 0.35
+  GhostRobot: {fileID: 0}
+  PlaybackFile: {fileID: 0}
+  ExecutePlayback: 0
 --- !u!1001 &1695256416
 PrefabInstance:
   m_ObjectHideFlags: 0
