@@ -49,7 +49,7 @@ public class DemoController : MonoBehaviour
 
         // InvokeRepeating("LogToFile", 0f, FrequencyToPeriod(LoggingRate));
 
-        // ROSBackend = ROSConnection.GetOrCreateInstance();
+        ROSBackend = ROSConnection.GetOrCreateInstance();
     }
 
     private void Update()
