@@ -25,7 +25,7 @@ The project was originally build on Unity 2021.3.3f1, but it has recently been r
 
 3. Start the ROS-side backend API
 
-See [Unity Robotics ROS-Side API]() for more information.
+See [Unity Robotics ROS-Side API](https://github.com/robotic-vision-lab/Unity-Robosim.git) for more information.
 
 4. Open the `VR Robotic Workspace` scene
 
