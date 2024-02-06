@@ -23,8 +23,8 @@ If you find this project useful, then please consider citing our work.
 
 1. Make sure that SteamVR is installed and running on your machine.
 2. Make sure that you have a VR headset connected to your machine.
-3. Make sure you complete initial SteamVR Room Setup.
-4. Make sure that you have a ROS-side properly configured and running.
+3. Make sure you complete the initial SteamVR Room Setup.
+4. Make sure that you have the ROS-side properly configured and running.
 
 ### Quick Start
 
@@ -52,7 +52,7 @@ Unity Editor.
 5. Start the Unity-side package:
 
 Hit the play button in the Unity Editor to start the package. Please note that
-at this point you should have SteamVR running with a headset connected and
+at this point you should have SteamVR running with a VR headset connected and
 the ROS-side API running.
 
 The robot should snap into position and you may begin interacting with the
